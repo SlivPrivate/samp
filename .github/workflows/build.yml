@@ -1,0 +1,18 @@
+name: build-libsamp
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cmake -S . -B build-${{ matrix.abi }} -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_LATEST_HOME/build/cmake/android.toolchain.cmake -DANDROID_ABI=${{ matrix.abi }} -DANDROID_PLATFORM=android-24 -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-${{ matrix.abi }} -j
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libsamp-${{ matrix.abi }}
+          path: build-${{ matrix.abi }}/libsamp.so
